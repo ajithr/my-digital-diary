@@ -1,0 +1,18 @@
+﻿
+<div class=@("app-container " + ClassName)>
+    <MudText Typo="Typo.h4" Align="MudBlazor.Align.Center">@Heading</MudText>
+    <div class="app-inner-layout">
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public string? ClassName { get; set; }
+
+    [Parameter]
+    public string? Heading { get; set; }
+}

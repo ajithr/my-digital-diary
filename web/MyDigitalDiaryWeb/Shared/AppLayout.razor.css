@@ -1,0 +1,60 @@
+﻿.app-container {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 80px);
+    position: relative;
+}
+
+    .app-container * {
+        box-sizing: inherit;
+    }
+
+    .app-container::before {
+        content: '';
+        min-height: 30px;
+        -webkit-box-flex: 1;
+        -webkit-flex-grow: 1;
+        flex-grow: 1;
+        display: block;
+        height: 1.875rem;
+    }
+
+    .app-container::after {
+        min-height: 63.9999996px;
+        content: "";
+        display: block;
+        -webkit-box-flex: 1;
+        -webkit-flex-grow: 1;
+        flex-grow: 1;
+        height: 24px;
+    }
+
+.app-inner-layout {
+    width: 28.125rem;
+    border-radius: 8px;
+    border: 1px solid #dadce0;
+    display: block;
+    flex-shrink: 0;
+    margin: 0 auto;
+    min-height: 0;
+    -webkit-transition: .2s;
+    transition: .2s;
+    width: 450px;
+    background: #fff;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    max-width: 100%;
+    position: relative;
+    z-index: 2;
+    padding: 48px 40px 36px;
+    margin-top: 20px;
+}
+
+    .app-inner-layout ::deep #mud-snackbar-container {
+        position: absolute;
+        top: -2.5rem;
+        width: 95%;
+    }

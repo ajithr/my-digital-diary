@@ -1,0 +1,35 @@
+﻿@inject UserState userState
+@inject NavigationManager NavigationManager
+
+<BSCol ColumnLarge="3" ColumnMedium="4" ColumnSmall="6" Column="6">
+    <div @onmouseover="OnMouseEnter" @onmouseout="OnMouseLeave">
+        <MudPaper Class="theme-card-paper" Elevation="@elevation" @onclick="OnCardClick" Style="@($"background:{Background};color:{MudBlazor.Colors.Shades.White}")">
+            <div class="d-flex theme-card-content">@ColorName</div>
+        </MudPaper>
+    </div>
+</BSCol>
+
+@code {
+    private int elevation { get; set; } = 0;
+    [Parameter]
+    public string Background { get; set; }
+
+    [Parameter]
+    public string ColorName { get; set; }
+
+    public void OnMouseEnter()
+    {
+        elevation = 3;
+    }
+
+    public void OnMouseLeave()
+    {
+        elevation = 0;
+    }
+
+    public async Task OnCardClick()
+    {
+        await userState.SetTheme(Background);
+        NavigationManager.NavigateTo("/dashboard");
+    }
+}

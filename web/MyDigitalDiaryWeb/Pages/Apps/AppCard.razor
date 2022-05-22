@@ -1,0 +1,46 @@
+﻿@inject UserState userState
+@inject NavigationManager NavigationManager
+
+<MediaQuery Media="@BlazorPro.BlazorSize.Breakpoints.MediumDown" @bind-Matches="IsMediumDown" />
+<BSCol ColumnLarge="3" ColumnMedium="4" ColumnSmall="6" Column="6">
+    <div @onmouseover="OnMouseEnter" @onmouseout="OnMouseLeave">
+        <MudPaper Class="app-card-paper" Elevation="@elevation" @onclick="OnCardClick">
+            <div class="d-flex app-card-content">
+                <div class="app-card-icon">
+                    <MudIcon Icon="@Icon" Size=@(IsMediumDown ? MudBlazor.Size.Medium : MudBlazor.Size.Large )  Style="@($"color:{userState.Theme};")" ></MudIcon>
+                </div>
+                <div class="app-card-title">
+                    <MudText Typo="Typo.button">@Title</MudText>
+                </div>
+            </div>
+        </MudPaper>
+    </div>
+</BSCol>
+
+@code {
+    private int elevation { get; set; } = 0;
+    public bool IsMediumDown { get; set; }
+    [Parameter]
+    public string? Icon { get; set; }
+
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public string? AppPath { get; set; }
+
+    public void OnMouseEnter()
+    {
+        elevation = 3;
+    }
+
+    public void OnMouseLeave()
+    {
+        elevation = 0;
+    }
+
+    public void OnCardClick()
+    {
+        NavigationManager.NavigateTo(AppPath);
+    }
+}
