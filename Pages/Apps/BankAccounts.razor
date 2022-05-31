@@ -1,0 +1,163 @@
+﻿@page "/bank-accounts"
+
+@using System.Net.Http
+@using System.Net.Http.Json
+@using System.Threading.Tasks
+@inject HttpClient Http
+@inject UserState userState;
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService;
+@implements IDisposable
+
+<MediaQuery Media="@BlazorPro.BlazorSize.Breakpoints.SmallDown" @bind-Matches="IsSmall" />
+
+<AppLayout ClassName="bank-accounts" Heading="Bank Accounts">
+    @if (accounts.Count > 0)
+    {
+        <BSRow>
+            @foreach (BankDetails account in accounts)
+            {
+                string imagePath = Banks.BankNames.ContainsKey(account.BankName) ? Banks.BankNames[account.BankName] : Banks.BankNames[Banks.BankNames.FirstOrDefault().Key];
+                <BankAccountCard @key="@account.Id" AccountNumber="@account.AccountNumber" BankName="@account.BankName" AccountType="@account.AccountType"
+                         ImagePath="@("images/banks/" + imagePath)" IsSmallDevice="IsSmall" OnClick="() => OnUpdateClick(account)"></BankAccountCard>
+            }
+        </BSRow>
+
+        <div class="position-fixed fixed-bottom add-account">
+            <MudFab Size="MudBlazor.Size.Large" StartIcon="@Icons.Material.Filled.Add" OnClick="OnAddIconClick"
+                Style="@($"background:{userState.Theme};color:{MudBlazor.Colors.Shades.White};" )" />
+        </div>
+    }
+    else
+    {
+        <div class="d-flex align-items-center mx-auto my-0 add-icon-wrapper">
+            <MudFab Size="MudBlazor.Size.Large" StartIcon="@Icons.Material.Filled.Add" OnClick="OnAddIconClick"
+                Style="@($"background:{userState.Theme};color:{MudBlazor.Colors.Shades.White};" )" />
+        </div>
+
+    }
+</AppLayout>
+
+<style>
+    .add-account {
+        right: 2rem;
+        bottom: 2rem;
+        left: initial;
+    }
+
+    .add-icon-wrapper {
+        min-height: 66vh;
+    }
+
+    .bank-account {
+        padding: 2.5rem;
+        margin: 0.5rem;
+        cursor: pointer;
+    }
+
+    .bank-account .bank-logo {
+        background: transparent;
+        border: 1px solid #dadce0;
+        width: 6.25rem;
+        height: 6.25rem;
+    }
+
+    .bank-account .mud-avatar-img {
+        height: auto;
+    }
+
+    @@media (max-width: 31.25rem) {
+        .bank-account {
+            padding: 0.625rem;
+            margin: 0.5rem 0;
+        }
+
+        .bank-account h6 {
+            font-size: 1rem;
+        }
+
+        .bank-account .bank-logo {
+            width: 3.125rem;
+            height: 3.125rem;
+        }
+    }
+</style>
+
+@code {
+    public bool IsSmall { get; set; }
+    private List<BankDetails> accounts = new List<BankDetails>();
+    [CascadingParameter]
+    protected EventCallback<bool> SetLoader { get; set; }
+
+    [CascadingParameter]
+    protected EventCallback RefreshPageHeight { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        userState.OnCrudAction += AccountAction;
+        await SetLoader.InvokeAsync(true);
+        try
+        {
+            accounts = await Http.GetFromJsonAsync<List<BankDetails>>("https://mydigitaldiaryservice.azurewebsites.net/getaccounts/" + userState.LoggedInUserID);
+            for (var i = 0; i <= accounts.Count; i++)
+            {
+                string imagePath = Banks.BankNames.ContainsKey(accounts[i].BankName) ? Banks.BankNames[accounts[i].BankName] : Banks.BankNames[Banks.BankNames.FirstOrDefault().Key];
+                accounts[i].ImagePath = "images/banks/" + Banks.BankNames[accounts[i].BankName];
+            }
+        }
+        catch (Exception e)
+        {
+            Snackbar.Add(e.Message, Severity.Error);
+            await SetLoader.InvokeAsync(false);
+        }
+        await SetLoader.InvokeAsync(false);
+    }
+
+    private void OnAddIconClick()
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("IsAddAccount", true);
+        DialogService.Show<BankAccountForm>("Add Account", parameters, new DialogOptions { CloseButton = true });
+    }
+
+    private void OnUpdateClick(BankDetails account)
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("Id", account.Id);
+        parameters.Add("IsAddAccount", false);
+        parameters.Add("BankName", account.BankName);
+        parameters.Add("AccountNumber", account.AccountNumber);
+        parameters.Add("AccountType", account.AccountType);
+        parameters.Add("AccountHolderName", account.AccountHolderName);
+        parameters.Add("IFSC", account.IFSC);
+        parameters.Add("ImagePath", account.ImagePath);
+        DialogService.Show<BankAccountForm>("Update Account", parameters, new DialogOptions { CloseButton = true });
+    }
+
+    private void AccountAction(object updatedAccount, CRUD action)
+    {
+        BankDetails account = (BankDetails)updatedAccount;
+        var index = accounts.FindIndex(data => data.Id == account.Id);
+        if (action == CRUD.Add)
+        {
+            accounts.Insert(0, account);
+        }
+        else if (action == CRUD.Update && index >= 0)
+        {
+            accounts[index] = account;
+        }
+        else
+        {
+            accounts.RemoveAt(index);
+        }
+        InvokeAsync(StateHasChanged);
+        RefreshPageHeight.InvokeAsync();
+    }
+
+    public void Dispose()
+    {
+        Snackbar.Dispose();
+        userState.OnCrudAction -= AccountAction;
+    }
+}
+

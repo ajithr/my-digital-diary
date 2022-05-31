@@ -1,0 +1,63 @@
+﻿<BSCol ColumnLarge="6" ColumnMedium="12" Column="12">
+    <MudPaper Class="d-flex flex-column bank-card" Elevation="3" @onclick="OnClick">
+        <BSRow MarginBottom="@(IsSmallDevice ? Margins.Small : Margins.Large)">
+            <BSCol Column="8">
+                <MudText Typo="Typo.h6" Class="bank-name">@BankName</MudText>
+            </BSCol>
+            <BSCol Column="4">
+                <MudIcon Class="d-flex ml-auto" Icon="@Icons.Filled.Wifi" Size="MudBlazor.Size.Medium"></MudIcon>
+            </BSCol>
+        </BSRow>
+        <BSRow MarginBottom="@(IsSmallDevice ? Margins.Small : Margins.Large)">
+            <MudText Typo="Typo.h6" Class="bank-account-number">@cardNumber</MudText>
+        </BSRow>
+        <BSRow MarginBottom="@(IsSmallDevice ? Margins.Small : Margins.Large)" Align="BlazorStrap.Align.Center">
+            <MudText Typo="Typo.overline">Exp. Date   </MudText>
+            <MudText Typo="Typo.h6" Class="expiry-date">@expiryDate</MudText>
+        </BSRow>
+        <BSRow Align="BlazorStrap.Align.Center">
+            <BSCol>
+                <MudText Typo="Typo.h6" Class="holder-name">@HolderName</MudText>
+            </BSCol>
+            <BSCol>
+                <MudAvatar Class="d-flex ml-auto bank-logo" Size="@(IsSmallDevice ? MudBlazor.Size.Small : MudBlazor.Size.Medium)" Image="@ImagePath" />
+            </BSCol>
+        </BSRow>
+    </MudPaper>
+</BSCol>
+
+@code {
+
+    private string cardNumber;
+    private string expiryDate;
+
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    [Parameter]
+    public string BankName { get; set; }
+
+    [Parameter]
+    public string CardNumber { get; set; }
+
+    [Parameter]
+    public string ExpiryMonth { get; set; }
+
+    [Parameter]
+    public string ExpiryYear { get; set; }
+
+    [Parameter]
+    public string HolderName { get; set; }
+
+    [Parameter]
+    public string ImagePath { get; set; }
+
+    [Parameter]
+    public bool IsSmallDevice { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        cardNumber = String.Format("{0:0000 0000 0000 0000}", Int64.Parse(CardNumber));
+        expiryDate = ExpiryMonth + "/" + ExpiryYear;
+    }
+}

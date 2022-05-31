@@ -1,0 +1,52 @@
+﻿<BSCol ColumnLarge="12" ColumnMedium="12" Column="12">
+    <MudPaper Class="d-flex flex-column bank-account" Elevation="3" @onclick="OnClick">
+        <BSRow MarginBottom="@(IsSmallDevice ? Margins.Small : Margins.Large)">
+            <BSCol Column="3" Class="d-flex justify-content-center align-items-center">
+                <BSRow>
+                    <div class="d-flex justify-content-center">
+                        <MudAvatar Class="d-flex mx-auto my-0 bank-logo" Size="@(IsSmallDevice ? MudBlazor.Size.Small : MudBlazor.Size.Medium)" Image="@ImagePath" />
+                    </div>
+                </BSRow>
+            </BSCol>
+            <BSCol Column="9">
+                <BSRow MarginBottom="Margins.Large">
+                    <MudText Typo="Typo.h6" Class="bank-name">@BankName</MudText>
+                </BSRow>
+                <BSRow MarginBottom="Margins.Large">
+                    <MudText Typo="Typo.h6" Class="bank-account-number">@accountNumber</MudText>
+                </BSRow>
+                <BSRow>
+                    <MudText Typo="Typo.h6" Class="bank-account-type">@AccountType</MudText>
+                </BSRow>
+            </BSCol>
+        </BSRow>
+    </MudPaper>
+</BSCol>
+
+@code {
+
+    private string accountNumber;
+
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    [Parameter]
+    public string BankName { get; set; }
+
+    [Parameter]
+    public string AccountNumber { get; set; }
+
+    [Parameter]
+    public string AccountType { get; set; }
+
+    [Parameter]
+    public string ImagePath { get; set; }
+
+    [Parameter]
+    public bool IsSmallDevice { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        accountNumber = "XXXXXXXXXXXX" + AccountNumber.Substring(AccountNumber.Length - 4);
+    }
+}

@@ -1,0 +1,28 @@
+﻿.themer-card-content {
+  justify-content: center;
+  align-items: center;
+}
+
+::deep .theme-card-paper {
+  padding: 4rem;
+  max-height: 8rem;
+  margin: 1.5rem 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+@media (max-width: 61.9375rem) {
+  ::deep .theme-card-paper {
+    padding: 2.5rem;
+    min-height: 8rem;
+  }
+}
+
+@media (max-width: 31.25rem) {
+  ::deep .theme-card-paper {
+    padding: 1.5rem 0.5rem;
+    min-height: 6rem;
+  }
+}

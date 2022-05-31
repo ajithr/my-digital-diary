@@ -1,0 +1,35 @@
+﻿.dashboard-wrapper {
+  margin-top: 3.125rem;
+}
+
+.dashboard-wrapper ::deep .col-6 {
+  padding-left: 0;
+}
+
+@media (max-width: 61.9375rem) {
+  .dashboard-wrapper {
+    margin-top: 2.5rem;
+  }
+}
+
+@media (max-width: 31.25rem) {
+  .dashboard-wrapper {
+    margin-top: 1.875rem;
+  }
+
+  .dashboard-wrapper ::deep.container {
+    padding: 0;
+  }
+
+  .dashboard-wrapper ::deep .col-6 {
+    padding: 0 0.5rem;
+  }
+
+  .dashboard-wrapper ::deep .col-6:nth-child(odd) {
+    padding-left: 1rem;
+  }
+
+  .dashboard-wrapper ::deep .col-6:nth-child(even) {
+    padding-right: 1rem;
+  }
+}

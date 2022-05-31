@@ -1,0 +1,147 @@
+﻿@implements IDisposable
+@inherits LayoutComponentBase
+@inject IJSRuntime JS;
+@inject UserState userState;
+@inject IDialogService DialogService;
+@inject NavigationManager NavigationManager;
+
+
+<CascadingValue Value=SetLoader>
+    <CascadingValue Value=RefreshPageHeight>
+        <MudThemeProvider />
+        <MudDialogProvider />
+        <MediaQueryList>
+            <MediaQuery Media="@BlazorPro.BlazorSize.Breakpoints.MediumDown" @bind-Matches="IsMediumDown" />
+            <div class="page">
+                <BSContainer Container="Container.Default">
+                    <header class="d-flex justify-content-center align-items-center">
+                        @if (userState.IsUserLoggedIn && !isRootPage)
+                        {
+                            <div class="home-icon" @onclick="OnHomeClick" role="button">
+                                <MudIcon Icon="@Icons.Material.Filled.Home" Size=@(IsMediumDown ? MudBlazor.Size.Medium : MudBlazor.Size.Large ) Style="@($"color:{userState.Theme};")" />
+                            </div>
+                        }
+                        <h1 class="m-0">My Digital Diary!</h1>
+                        @if (userState.IsUserLoggedIn && !isRootPage)
+                        {
+                            <div class="avatar-wrapper ml-auto">
+                                <MudMenu Icon="@Icons.Material.Filled.Settings" AnchorOrigin="Origin.BottomLeft" Size=@(IsMediumDown ? MudBlazor.Size.Medium : MudBlazor.Size.Large ) TransformOrigin="Origin.BottomCenter">
+                                    <MudMenuItem OnClick="OnThemeNav" OnTouch="OnThemeNav">
+                                        <MudIcon Icon="@Icons.Filled.ColorLens" Size=@(IsMediumDown ? MudBlazor.Size.Medium : MudBlazor.Size.Large ) Style="@($"color:{userState.Theme};")" />  Themes
+                                    </MudMenuItem>
+                                    <MudMenuItem OnClick="OnLogOut" OnTouch="OnLogOut">
+                                        <MudIcon Icon="@Icons.Filled.Logout" Size=@(IsMediumDown ? MudBlazor.Size.Medium : MudBlazor.Size.Large ) Style="@($"color:{userState.Theme};")" />  Logout
+                                    </MudMenuItem>
+                                </MudMenu>
+                            </div>
+                        }
+                    </header>
+                    <main>
+                        @Body
+                    </main>
+                </BSContainer>
+                <MudOverlay @bind-Visible="showLoader" LightBackground="true" Absolute="true">
+                    <MudProgressCircular Style="@($"color:{userState.Theme};")" Size="MudBlazor.Size.Medium" Indeterminate="true" />
+                </MudOverlay>
+            </div>
+        </MediaQueryList>
+    </CascadingValue>
+</CascadingValue>
+
+
+<style>
+    header {
+        box-shadow: inset 0 -3px 0 0 @userState.Theme;
+    }
+
+    .avatar-wrapper .mud-menu button {
+        color: @userState.Theme;
+    }
+</style>
+
+@code {
+    private bool isJsInit;
+    private bool isRootPage;
+    private bool showLoader;
+    private IJSObjectReference module;
+    public bool IsMediumDown { get; set; }
+
+    private async Task OnLogOut()
+    {
+        isJsInit = false;
+        await userState.SetLogin(false, null);
+        NavigationManager.NavigateTo("sign-in");
+    }
+
+    private void OnHomeClick()
+    {
+        NavigationManager.NavigateTo("dashboard");
+    }
+
+    private void OnThemeNav()
+    {
+        DialogService.Show<Themes>("Themes", new DialogOptions { CloseButton = true });
+    }
+
+
+    public EventCallback<bool> SetLoader => EventCallback.Factory.Create<bool>(this, SetLoaderState);
+    public EventCallback RefreshPageHeight => EventCallback.Factory.Create(this, RefreshPageHeightState);
+
+    private void SetLoaderState(bool isLoaderVisible)
+    {
+        showLoader = isLoaderVisible;
+    }
+
+    private void RefreshPageHeightState()
+    {
+        module.InvokeVoidAsync("refreshPageHeight");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import",
+                "./Shared/MainLayout.razor.js");
+        }
+        if (userState.IsUserLoggedIn && !isJsInit)
+        {
+            isJsInit = true;
+            await module.InvokeVoidAsync("preventPopupPropagation");
+        }
+    }
+
+    private void LocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        if (module != null)
+        {
+            List<string> loadingPages = new List<string>() { "cards", "bank-accounts" };
+            string routePath = NavigationManager.ToBaseRelativePath(e.Location);
+            module.InvokeVoidAsync("refreshPageHeight", loadingPages.Contains(routePath));
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        userState.OnChange += StateHasChanged;
+        NavigationManager.LocationChanged += LocationChanged;
+    }
+
+    protected override void OnParametersSet()
+    {
+        string routePath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        List<string> skipPages = new List<string>() { string.Empty, "reset-password", "create-account", "sign-in" };
+        isRootPage = routePath == "" || routePath == "sign-in";
+        @if (!userState.IsUserLoggedIn && !skipPages.Contains(routePath))
+        {
+            NavigationManager.NavigateTo("sign-in");
+        }
+    }
+
+    public void Dispose()
+    {
+        userState.OnChange -= StateHasChanged;
+        NavigationManager.LocationChanged -= LocationChanged;
+    }
+
+}

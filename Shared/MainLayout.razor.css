@@ -1,0 +1,61 @@
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+.page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #f3f6f7;
+  height: 100vh;
+}
+
+main {
+  flex: 1;
+}
+
+header {
+  height: 5rem;
+  flex-direction: row;
+}
+
+#mud-snackbar-container {
+  position: absolute;
+  top: 0;
+  width: 75%;
+}
+
+h1 {
+  font-family: cursive;
+  position: absolute;
+}
+
+@media (max-width: 61.9375rem) {
+  h1 {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 40.06125rem) {
+  header {
+    height: 3.75rem;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (min-width: 40.0625rem) {
+  .page {
+    flex-direction: row;
+  }
+}
+
+@media only screen and (max-width: 61.9375rem) and (orientation: landscape) {
+  .page {
+    height: auto;
+  }
+}

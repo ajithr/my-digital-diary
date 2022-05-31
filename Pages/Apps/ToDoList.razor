@@ -1,0 +1,105 @@
+﻿@page "/todo-list"
+@inject UserState userState
+@implements IDisposable
+
+<AppLayout ClassName="todo-list" Heading="Todo List">
+    <div class="mb-5">
+        <BSRow Align="BlazorStrap.Align.Center">
+            <BSCol Column="10" Class="pl-0">
+                <MudTextField @bind-Value="newTodo" Label="Add Tasks" Variant="Variant.Outlined"></MudTextField>
+            </BSCol>
+            <BSCol Column="2" Class="d-flex justify-content-center">
+                <MudIconButton OnClick="AddTodo" Icon="@Icons.Material.Filled.Add" aria-label="add"
+                               Style="@($"background:{userState.Theme};color:{MudBlazor.Colors.Shades.White}")"></MudIconButton>
+            </BSCol>
+        </BSRow>
+    </div>
+    <BSRow>
+        <MudList Clickable="false">
+            @foreach (var todo in todos)
+            {
+                <MudListItem Class="p-0 todo-item">
+                    <MudPaper Outlined="true">
+                        <BSRow Align="BlazorStrap.Align.Center">
+                            <BSCol Column="2">
+                                <MudCheckBox @bind-Checked="@todo.IsDone" Style="@($"color:{userState.Theme}")"></MudCheckBox>
+                            </BSCol>
+                            <BSCol Column="6" Class="p-0">
+                                @if (todo.IsEditing)
+                                {
+                                    <MudTextField @bind-Value="todo.Title" Label="Edit Task" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.body1" Class="@(todo.IsDone ? "text-decoration-line-through text-break" : "text-break")">
+                                        @todo.Title
+                                    </MudText>
+                                }
+                            </BSCol>
+                            <BSCol Column="2">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <MudToggleIconButton @bind-Toggled="@todo.IsEditing" Style="@($"color:{userState.Theme}")"
+                                                     Icon="@Icons.Material.Filled.Edit" ToggledIcon="@Icons.Material.Filled.Save" />
+                                </div>
+                            </BSCol>
+                            <BSCol Column="2" Class="p-0">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" Style="@($"color:{userState.Theme}")"
+                                               OnClick="() => RemoveTodo(todo.Id)"></MudIconButton>
+                                </div>
+                            </BSCol>
+                        </BSRow>
+                    </MudPaper>
+                </MudListItem>
+            }
+        </MudList>
+    </BSRow>
+</AppLayout>
+
+<style>
+    .todo-list .todo-item .mud-checkbox .mud-icon-button,
+    .todo-list .mud-input.mud-input-outlined:focus-within .mud-input-outlined-border {
+        border-color: @userState.Theme;
+    }
+
+    .todo-list .todo-item .mud-checkbox .mud-svg-icon,
+    .todo-list .mud-input:focus-within ~ label.mud-input-label.mud-input-label-inputcontrol.mud-input-label-outlined {
+        color: @userState.Theme;
+    }
+</style>
+
+@code {
+    private List<TodoItem> todos = new();
+    private string newTodo;
+
+    public class TodoItem
+    {
+        public Guid Id { get; set; }
+        public string Title { get; set; }
+        public bool IsEditing { get; set; }
+        public bool IsDone { get; set; }
+    }
+    private void AddTodo()
+    {
+        if (!string.IsNullOrWhiteSpace(newTodo))
+        {
+            todos.Add(new TodoItem { Title = newTodo, Id = Guid.NewGuid() });
+            newTodo = string.Empty;
+        }
+    }
+    private void RemoveTodo(Guid id)
+    {
+        int index = todos.FindIndex(data => data.Id == id);
+        todos.RemoveAt(index);
+    }
+
+    protected override void OnInitialized()
+    {
+        userState.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        userState.OnChange -= StateHasChanged;
+    }
+}

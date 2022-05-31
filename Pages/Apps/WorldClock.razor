@@ -1,0 +1,119 @@
+﻿@page "/world-clock"
+@using System.Timers
+
+<AppLayout ClassName="world-clock" Heading="World Clock">
+    <CascadingValue Value="this">
+        <BSRow>
+            <BSCol Column="12" ColumnMedium="6" ColumnLarge="6">
+                <div Class="@primaryClassName">
+                    <MudAutocomplete T="string" Label="TimeZone" @bind-Value="PrimaryId" SearchFunc="@SearchTimeZone" Margin="@Margin.Dense"
+                                     Variant="@Variant.Outlined" Immediate="true" Class="@primaryClassName" />
+                    <div class="clock-wrapper">
+                        <Clock @bind-TimeZone="PrimaryId" IsPrimaryClock="true"></Clock>
+                    </div>
+                </div>
+            </BSCol>
+            <BSCol Column="12" ColumnMedium="6" ColumnLarge="6">
+                <div Class="@secondaryClassName">
+                    <MudAutocomplete T="string" Label="TimeZone" @bind-Value="SecondaryId" SearchFunc="@SearchTimeZone" Margin="@Margin.Dense"
+                                     Variant="@Variant.Outlined" Immediate="true" Class="@secondaryClassName" />
+                    <div class="clock-wrapper">
+                        <Clock @bind-TimeZone="SecondaryId"></Clock>
+                    </div>
+                </div>
+            </BSCol>
+        </BSRow>
+    </CascadingValue>
+</AppLayout>
+
+<style>
+        .clock-wrapper {
+        width: 100%;
+        min-height: 21.875rem;
+    }
+
+    .select-night,
+    .select-night.mud-input-control {
+        background: @MudBlazor.Colors.Shades.Black;
+    }
+
+    .select-night .mud-input > input.mud-input-root,
+    .select-night.mud-input-control label.mud-input-label {
+        background: @MudBlazor.Colors.Shades.Black;
+        color: @MudBlazor.Colors.Shades.White;
+    }
+</style>
+
+@code {
+    private bool isPrimaryNight;
+    private bool isSecondaryNight;
+    private string primaryClassName { get; set; }
+    private string secondaryClassName { get; set; }
+    private List<string> timeZones { get; set; } = new List<string>();
+
+    private string primaryId;
+    public string PrimaryId
+    {
+        get { return primaryId; }
+        set
+        {
+            if (value != null && value != primaryId)
+            {
+                primaryId = value;
+            }
+        }
+    }
+
+    private string secondaryId;
+    public string SecondaryId
+    {
+        get { return secondaryId; }
+        set
+        {
+            if (value != null && value != secondaryId)
+            {
+                secondaryId = value;
+            }
+        }
+    }
+
+    public void PrimaryClockRefresh(bool isNight)
+    {
+        if (isPrimaryNight != isNight)
+        {
+            isPrimaryNight = isNight;
+            primaryClassName = isPrimaryNight ? "select-night" : "";
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void SecondaryClockRefresh(bool isNight)
+    {
+        if (isSecondaryNight != isNight)
+        {
+            isSecondaryNight = isNight;
+            secondaryClassName = isSecondaryNight ? "select-night" : "";
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        PrimaryId = "Asia/Kolkata";
+        SecondaryId = "America/New_York";
+        foreach (TimeZoneInfo timeZone in TimeZoneInfo.GetSystemTimeZones())
+        {
+            timeZones.Add(timeZone.Id);
+        }
+        timeZones.Sort();
+    }
+
+    private async Task<IEnumerable<string>> SearchTimeZone(string value)
+    {
+        await Task.CompletedTask;
+        if (string.IsNullOrEmpty(value))
+            return timeZones;
+        return timeZones.Where(x => x.Contains(value));
+    }
+
+}
